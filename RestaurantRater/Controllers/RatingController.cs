@@ -1,6 +1,7 @@
 ﻿using RestaurantRater.Models;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity.Core.Objects.DataClasses;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -46,11 +47,69 @@ namespace RestaurantRater.Controllers
         }
 
         // Get rating by ID ?
+        [HttpGet]
+        public async Task<IHttpActionResult> GetRatingById(int id)
+        {
+            Rating rating = await _context.Ratings.FindAsync(id);
+            if(rating != null)
+            {
+                return Ok(rating);
+            }
+            return NotFound();
+        }
 
         // Get ALL ratings for specific restaurant by restaurant ID
+        [HttpGet]
+        public async Task<IHttpActionResult> GetAllRatings(int id)
+        {
+            Restaurant restaurant = await _context.Restaurants.FindAsync(id);
+            List<Rating> ratings = restaurant.Ratings;
+            return Ok(ratings);
+        }
 
         // Update rating
+        [HttpPut]
+        public async Task<IHttpActionResult> UpdateRating([FromUri] int id, [FromBody]Restaurant updatedRating)
+        {
+            // Check if updated restaurant is valid
+            if (ModelState.IsValid)
+            {
+                // Find and Update the restaurant
+                Rating rating = await _context.Ratings.FindAsync(id);
+
+                if (rating != null)
+                {
+                    // Update rating(s) now that we found them
+                    rating.CleanlinessScore = updatedRating.CleanlinessRating;
+                    rating.EnvironmentScore = updatedRating.EnvironmentRating;
+                    rating.FoodScore = updatedRating.FoodRating;
+
+                    await _context.SaveChangesAsync();
+                    return Ok();
+                }
+                // Did not find rating
+                return NotFound();
+            }
+            // Return bad request
+            return BadRequest(ModelState);
+        }
+
 
         // Delete rating
+        [HttpDelete]
+        public async Task<IHttpActionResult> DeleteRatingRatingById(int id)
+        {
+            Rating rating = await _context.Ratings.FindAsync(id);
+            
+            if (rating == null)
+                return NotFound();
+
+            _context.Ratings.Remove(rating);
+
+            if (await _context.SaveChangesAsync() == 1)
+                return Ok("The restaurant was deleted.");
+
+            return InternalServerError();
+        }
     }
 }
