@@ -60,6 +60,7 @@ namespace RestaurantRater.Controllers
 
         // Get ALL ratings for specific restaurant by restaurant ID
         [HttpGet]
+        [Route("api/Rating/GetAll/{id}")]
         public async Task<IHttpActionResult> GetAllRatings(int id)
         {
             Restaurant restaurant = await _context.Restaurants.FindAsync(id);
@@ -69,7 +70,7 @@ namespace RestaurantRater.Controllers
 
         // Update rating
         [HttpPut]
-        public async Task<IHttpActionResult> UpdateRating([FromUri] int id, [FromBody]Restaurant updatedRating)
+        public async Task<IHttpActionResult> UpdateRating([FromUri] int id, [FromBody]Rating updatedRating)
         {
             // Check if updated restaurant is valid
             if (ModelState.IsValid)
@@ -80,9 +81,9 @@ namespace RestaurantRater.Controllers
                 if (rating != null)
                 {
                     // Update rating(s) now that we found them
-                    rating.CleanlinessScore = updatedRating.CleanlinessRating;
-                    rating.EnvironmentScore = updatedRating.EnvironmentRating;
-                    rating.FoodScore = updatedRating.FoodRating;
+                    rating.CleanlinessScore = updatedRating.CleanlinessScore;
+                    rating.EnvironmentScore = updatedRating.EnvironmentScore;
+                    rating.FoodScore = updatedRating.FoodScore;
 
                     await _context.SaveChangesAsync();
                     return Ok();
